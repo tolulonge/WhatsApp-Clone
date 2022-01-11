@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
@@ -58,7 +60,6 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    TODO("Not yet implemented")
                 }
 
             })
@@ -77,6 +78,9 @@ class MainActivity : AppCompatActivity() {
                 mAuth?.signOut()
                 sendUserToLoginActivity()
             }
+             R.id.main_create_group_option -> {
+                 requestNewGroup()
+             }
             R.id.main_settings_option -> {
                 sendUserToSettingsActivity()
             }
@@ -88,6 +92,47 @@ class MainActivity : AppCompatActivity() {
         }
 
         return true
+    }
+
+    private fun requestNewGroup() {
+        val builder = AlertDialog.Builder(this,
+        R.style.AlertDialog)
+
+        builder.setTitle("Enter Group Name :")
+        builder.apply {
+            val groupNameField = EditText(this@MainActivity)
+            groupNameField.hint = "e.g Droiders"
+            setView(groupNameField)
+            setPositiveButton("Create"
+            ) { p0, p1 ->
+                val groupName = groupNameField.text.toString()
+                if (groupName.isEmpty()){
+                    Toast.makeText(this@MainActivity, "Please write Group Name", Toast.LENGTH_SHORT).show()
+                }
+                else{
+                    createNewGroup(groupName)
+                }
+            }
+            setNegativeButton("Cancel"
+            ) { p0, _ ->
+                p0.cancel()
+            }
+            show()
+
+        }
+    }
+
+    private fun createNewGroup(groupName: String) {
+        rootRef?.child("Groups")?.child(groupName)?.setValue("")
+            ?.addOnCompleteListener {
+                if (it.isSuccessful){
+                    Toast.makeText(
+                        this,
+                        "$groupName group is created successfully...",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
     }
 
     private fun sendUserToLoginActivity() {
