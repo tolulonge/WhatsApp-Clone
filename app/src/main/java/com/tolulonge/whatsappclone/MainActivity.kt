@@ -3,6 +3,8 @@ package com.tolulonge.whatsappclone
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.tolulonge.whatsappclone.databinding.ActivityMainBinding
@@ -39,5 +41,29 @@ class MainActivity : AppCompatActivity() {
     private fun sendUserToLoginActivity() {
         val loginIntent = Intent(this, LoginActivity::class.java)
         startActivity(loginIntent)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.options_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+         when (item.itemId) {
+            R.id.main_logout_option -> {
+                mAuth?.signOut()
+                sendUserToLoginActivity()
+            }
+            R.id.main_settings_option -> {
+
+            }
+
+            R.id.main_find_friends_option -> {
+
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+
+        return true
     }
 }
