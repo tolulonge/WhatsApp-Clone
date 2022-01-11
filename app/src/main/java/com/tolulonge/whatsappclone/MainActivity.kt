@@ -3,7 +3,6 @@ package com.tolulonge.whatsappclone
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.appcompat.widget.Toolbar
 import com.google.firebase.auth.FirebaseUser
 import com.tolulonge.whatsappclone.databinding.ActivityMainBinding
 
