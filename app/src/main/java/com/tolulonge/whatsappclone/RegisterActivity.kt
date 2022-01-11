@@ -7,11 +7,14 @@ import android.os.Bundle
 import android.widget.ProgressBar
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.tolulonge.whatsappclone.databinding.ActivityRegisterBinding
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var binding : ActivityRegisterBinding
     private var mAuth : FirebaseAuth? = null
+    private var rootRef : DatabaseReference? = null
     private lateinit var loadingBar: ProgressDialog
 
 
@@ -20,6 +23,7 @@ class RegisterActivity : AppCompatActivity() {
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
         mAuth = FirebaseAuth.getInstance()
+        rootRef = FirebaseDatabase.getInstance().reference
         loadingBar = ProgressDialog(this)
 
         binding.alreadyHaveAccountLink.setOnClickListener {
@@ -50,9 +54,14 @@ class RegisterActivity : AppCompatActivity() {
         loadingBar.show()
             mAuth?.createUserWithEmailAndPassword(email, password)?.addOnCompleteListener {
                 if (it.isSuccessful){
+                    val currentUserId = mAuth?.currentUser?.uid
+                    if (currentUserId != null) {
+                        rootRef?.child("Users")?.child(currentUserId)?.setValue("")
+                    }
+
                     Toast.makeText(this, "Account Created Successfully", Toast.LENGTH_SHORT).show()
                     loadingBar.dismiss()
-                    sendUserToLoginActivity()
+                    sendUserToMainActivity()
                 }else{
                     val message = it.exception.toString()
                     Toast.makeText(this, "Error : $message", Toast.LENGTH_SHORT).show()
@@ -64,5 +73,11 @@ class RegisterActivity : AppCompatActivity() {
     private fun sendUserToLoginActivity() {
         val loginIntent = Intent(this, LoginActivity::class.java)
         startActivity(loginIntent)
+    }
+    private fun sendUserToMainActivity() {
+        val mainIntent = Intent(this, MainActivity::class.java)
+        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        startActivity(mainIntent)
+        finish()
     }
 }

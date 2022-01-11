@@ -11,7 +11,6 @@ import com.tolulonge.whatsappclone.databinding.ActivityLoginBinding
 import com.tolulonge.whatsappclone.databinding.ActivityMainBinding
 
 class LoginActivity : AppCompatActivity() {
-    private var currentUser : FirebaseUser? = null
     private lateinit var binding: ActivityLoginBinding
     private var mAuth : FirebaseAuth? = null
     private lateinit var loadingBar: ProgressDialog
@@ -21,7 +20,6 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
         mAuth = FirebaseAuth.getInstance()
-        currentUser = mAuth?.currentUser
         loadingBar = ProgressDialog(this)
 
         binding.needNewAccontLink.setOnClickListener {
@@ -68,15 +66,11 @@ class LoginActivity : AppCompatActivity() {
         startActivity(registerIntent)
     }
 
-    override fun onStart() {
-        super.onStart()
-        if (currentUser != null){
-            sendUserToMainActivity()
-        }
-    }
 
     private fun sendUserToMainActivity() {
-        val loginIntent = Intent(this, MainActivity::class.java)
-        startActivity(loginIntent)
+        val mainIntent = Intent(this, MainActivity::class.java)
+        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        startActivity(mainIntent)
+        finish()
     }
 }
