@@ -27,6 +27,11 @@ class LoginActivity : AppCompatActivity() {
         binding.loginBtn.setOnClickListener {
             allowUserToLogin()
         }
+
+        binding.phoneLoginBtn.setOnClickListener {
+            val phoneLoginIntent = Intent(this, PhoneLoginActivity::class.java)
+            startActivity(phoneLoginIntent)
+        }
     }
 
     private fun allowUserToLogin() {
