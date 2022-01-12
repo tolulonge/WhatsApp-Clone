@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.main_find_friends_option -> {
-
+                sendUserToFindFriendsActivity()
             }
             else -> super.onOptionsItemSelected(item)
         }
@@ -141,5 +141,10 @@ class MainActivity : AppCompatActivity() {
         settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(settingsIntent)
         finish()
+    }
+
+    private fun sendUserToFindFriendsActivity(){
+        val findFriendsIntent = Intent(this, FindFriendsActivity::class.java)
+        startActivity(findFriendsIntent)
     }
 }

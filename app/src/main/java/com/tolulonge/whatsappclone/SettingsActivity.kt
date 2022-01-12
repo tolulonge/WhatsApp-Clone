@@ -58,7 +58,7 @@ class SettingsActivity : AppCompatActivity() {
             return
         }
         val profileMap = hashMapOf("uid" to currentUserID, "name" to setUserName, "status" to setStatus)
-        rootRef.child("Users").child(currentUserID).setValue(profileMap)
+        rootRef.child("Users").child(currentUserID).updateChildren(profileMap as Map<String, Any>)
             .addOnCompleteListener {
                 if(it.isSuccessful){
                     Toast.makeText(this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show()
@@ -90,6 +90,7 @@ class SettingsActivity : AppCompatActivity() {
 
                         binding.setUserName.setText(retrievedUserName)
                         binding.setProfileStatus.setText(retrievedStatus)
+                        Log.d("DebuggingPicture", "onDataChange: $retrievedImage")
                         Picasso.get().load(retrievedImage).into(binding.setProfileImage)
 
                     }else if (snapshot.exists() && snapshot.hasChild("name")){
