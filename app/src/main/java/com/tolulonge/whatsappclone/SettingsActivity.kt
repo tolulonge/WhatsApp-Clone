@@ -1,12 +1,20 @@
 package com.tolulonge.whatsappclone
 
+import android.app.ProgressDialog
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.google.firebase.storage.UploadTask
+import com.squareup.picasso.Picasso
+import com.theartofdev.edmodo.cropper.CropImage
+import com.theartofdev.edmodo.cropper.CropImageView
 import com.tolulonge.whatsappclone.databinding.ActivitySettingsBinding
 
 class SettingsActivity : AppCompatActivity() {
@@ -14,6 +22,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var currentUserID : String
     private lateinit var mAuth : FirebaseAuth
     private lateinit var rootRef : DatabaseReference
+    private lateinit var loadingBar: ProgressDialog
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
@@ -21,11 +30,19 @@ class SettingsActivity : AppCompatActivity() {
         mAuth = FirebaseAuth.getInstance()
         rootRef = FirebaseDatabase.getInstance().reference
         currentUserID = mAuth.currentUser?.uid.toString()
+        loadingBar = ProgressDialog(this)
 
         binding.updateSettingsButton.setOnClickListener {
             updateSettings()
         }
         retrieveUserInformation()
+
+        binding.setProfileImage.setOnClickListener{
+            val galleryIntent = Intent()
+            galleryIntent.action = Intent.ACTION_GET_CONTENT
+            galleryIntent.type = "image/*"
+            startActivityForResult(galleryIntent, GALLERY_PICK)
+        }
     }
 
     private fun updateSettings() {
@@ -73,7 +90,7 @@ class SettingsActivity : AppCompatActivity() {
 
                         binding.setUserName.setText(retrievedUserName)
                         binding.setProfileStatus.setText(retrievedStatus)
-                     //   binding.setProfileImage.setImageResource(retrievedUserName.toInt())
+                        Picasso.get().load(retrievedImage).into(binding.setProfileImage)
 
                     }else if (snapshot.exists() && snapshot.hasChild("name")){
                         val retrievedUserName = snapshot.child("name").value.toString()
@@ -92,5 +109,64 @@ class SettingsActivity : AppCompatActivity() {
                 }
 
             })
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == GALLERY_PICK && resultCode == RESULT_OK && data != null) {
+            val imageUri = data.data
+
+            CropImage.activity()
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .setAspectRatio(1, 1)
+                .start(this)
+        }
+
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            val result = CropImage.getActivityResult(data)
+
+            if (resultCode == RESULT_OK) {
+                loadingBar.setTitle("Set Profile Image")
+                loadingBar.setMessage("Please wait, your profile image is updating...")
+                loadingBar.setCanceledOnTouchOutside(false)
+                loadingBar.show()
+                val resultUri = result.uri
+
+                val filePath = Firebase.userProfileImagesRef.child("$currentUserID.jpg")
+                filePath.putFile(resultUri).continueWith {
+                    if (it.isSuccessful) {
+                        Toast.makeText(
+                            this,
+                            "Profile Image Uploaded Successfully...",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        val message = it.exception.toString()
+                        Toast.makeText(this, "Error: $message", Toast.LENGTH_SHORT).show()
+                        loadingBar.dismiss()
+                    }
+                    filePath.downloadUrl
+                }.addOnCompleteListener{
+                    if (it.isSuccessful){
+                        it.result!!.addOnSuccessListener {task->
+                            val downloadedUrl = task.toString()
+                            Log.d("PhotoUpload", "onActivityResult: $downloadedUrl")
+                            Firebase.rootRef.child("Users").child(currentUserID).child("image")
+                                .setValue(downloadedUrl).addOnCompleteListener { imageTask ->
+                                    if (imageTask.isSuccessful) {
+                                        showToast("Image saved in Database successfully...", this)
+                                        loadingBar.dismiss()
+                                    } else {
+                                        showToast("Error : ${imageTask.exception}", this)
+                                        loadingBar.dismiss()
+                                    }
+                                }
+
+                        }
+                    }
+                }
+            }
+        }
     }
 }
