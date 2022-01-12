@@ -5,6 +5,7 @@
       <map>
         <entry key="app/src/main/res/drawable/buttons.xml" value="0.1259259259259259" />
         <entry key="app/src/main/res/drawable/inputs.xml" value="0.321025641025641" />
+        <entry key="app/src/main/res/layout/activity_group_chat.xml" value="0.16770833333333332" />
         <entry key="app/src/main/res/layout/activity_login.xml" value="0.165" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.15070921985815602" />
         <entry key="app/src/main/res/layout/activity_register.xml" value="0.26721014492753625" />

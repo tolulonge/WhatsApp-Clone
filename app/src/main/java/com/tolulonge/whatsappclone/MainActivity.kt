@@ -17,17 +17,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var myTabsAccessorAdapter: TabsAccessorAdapter
-    private var currentUser : FirebaseUser? = null
-    private var rootRef : DatabaseReference? = null
-    private var mAuth : FirebaseAuth? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        mAuth = FirebaseAuth.getInstance()
-        rootRef = FirebaseDatabase.getInstance().reference
-        currentUser = mAuth?.currentUser
 
          setSupportActionBar(binding.mainToolBar)
         supportActionBar?.title = "WhatsApp"
@@ -39,7 +33,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (currentUser == null){
+        if (Firebase.currentUser == null){
             sendUserToLoginActivity()
         }
         else{
@@ -48,9 +42,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun verifyUserExistence() {
-        val currentUserID = mAuth?.currentUser?.uid
+        val currentUserID = Firebase.mAuth.currentUser?.uid
         if (currentUserID != null) {
-            rootRef?.child("Users")?.child(currentUserID)?.addValueEventListener(object: ValueEventListener{
+            Firebase.rootRef.child("Users").child(currentUserID).addValueEventListener(object: ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.child("name").exists()){
                         Toast.makeText(this@MainActivity, "Welcome", Toast.LENGTH_SHORT).show()
@@ -75,7 +69,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
          when (item.itemId) {
             R.id.main_logout_option -> {
-                mAuth?.signOut()
+                Firebase.mAuth.signOut()
                 sendUserToLoginActivity()
             }
              R.id.main_create_group_option -> {
@@ -123,8 +117,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun createNewGroup(groupName: String) {
-        rootRef?.child("Groups")?.child(groupName)?.setValue("")
-            ?.addOnCompleteListener {
+        Firebase.rootRef.child("Groups").child(groupName).setValue("")
+            .addOnCompleteListener {
                 if (it.isSuccessful){
                     Toast.makeText(
                         this,

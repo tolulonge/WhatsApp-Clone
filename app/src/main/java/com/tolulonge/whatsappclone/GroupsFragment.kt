@@ -1,5 +1,6 @@
 package com.tolulonge.whatsappclone
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -29,6 +30,12 @@ class GroupsFragment : Fragment() {
         groupRef = FirebaseDatabase.getInstance().reference.child("Groups")
 
         retrieveAndDisplayGroups()
+        binding.listView.setOnItemClickListener { adapterView, view, position, id ->
+            val currentGroupName = adapterView.getItemAtPosition(position).toString()
+            val groupChatIntent = Intent(requireContext(), GroupChatActivity::class.java)
+            groupChatIntent.putExtra("groupName", currentGroupName)
+            startActivity(groupChatIntent)
+        }
         return binding.root
     }
 

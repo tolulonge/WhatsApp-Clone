@@ -12,14 +12,12 @@ import com.tolulonge.whatsappclone.databinding.ActivityMainBinding
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
-    private var mAuth : FirebaseAuth? = null
     private lateinit var loadingBar: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        mAuth = FirebaseAuth.getInstance()
         loadingBar = ProgressDialog(this)
 
         binding.needNewAccontLink.setOnClickListener {
@@ -48,7 +46,7 @@ class LoginActivity : AppCompatActivity() {
         loadingBar.setMessage("Please wait...")
         loadingBar.setCanceledOnTouchOutside(true)
         loadingBar.show()
-        mAuth?.signInWithEmailAndPassword(email, password)?.addOnCompleteListener {
+        Firebase.mAuth.signInWithEmailAndPassword(email, password)?.addOnCompleteListener {
             if(it.isSuccessful){
                 sendUserToMainActivity()
                 Toast.makeText(this, "Logged in Successfully...", Toast.LENGTH_SHORT).show()

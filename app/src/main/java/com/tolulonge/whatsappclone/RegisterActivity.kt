@@ -13,8 +13,6 @@ import com.tolulonge.whatsappclone.databinding.ActivityRegisterBinding
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var binding : ActivityRegisterBinding
-    private var mAuth : FirebaseAuth? = null
-    private var rootRef : DatabaseReference? = null
     private lateinit var loadingBar: ProgressDialog
 
 
@@ -22,8 +20,6 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        mAuth = FirebaseAuth.getInstance()
-        rootRef = FirebaseDatabase.getInstance().reference
         loadingBar = ProgressDialog(this)
 
         binding.alreadyHaveAccountLink.setOnClickListener {
@@ -52,11 +48,11 @@ class RegisterActivity : AppCompatActivity() {
         loadingBar.setMessage("Please Wait, while we are creating new account for you...")
         loadingBar.setCanceledOnTouchOutside(true)
         loadingBar.show()
-            mAuth?.createUserWithEmailAndPassword(email, password)?.addOnCompleteListener {
+            Firebase.mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener {
                 if (it.isSuccessful){
-                    val currentUserId = mAuth?.currentUser?.uid
+                    val currentUserId = Firebase.mAuth.currentUser?.uid
                     if (currentUserId != null) {
-                        rootRef?.child("Users")?.child(currentUserId)?.setValue("")
+                        Firebase.rootRef.child("Users").child(currentUserId).setValue("")
                     }
 
                     Toast.makeText(this, "Account Created Successfully", Toast.LENGTH_SHORT).show()
