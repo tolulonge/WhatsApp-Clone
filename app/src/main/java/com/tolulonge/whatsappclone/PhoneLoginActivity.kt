@@ -10,14 +10,9 @@ import android.widget.Toast
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseException
-import com.google.firebase.auth.AuthResult
-import com.google.firebase.auth.PhoneAuthCredential
-import com.google.firebase.auth.PhoneAuthProvider
+import com.google.firebase.auth.*
 import com.tolulonge.whatsappclone.databinding.ActivityPhoneLoginBinding
 import java.util.concurrent.TimeUnit
-import com.google.firebase.auth.PhoneAuthOptions
-
-
 
 
 class PhoneLoginActivity : AppCompatActivity() {
@@ -54,7 +49,7 @@ class PhoneLoginActivity : AppCompatActivity() {
                     loadingBar.setCanceledOnTouchOutside(false)
                     loadingBar.show()
 
-                    val options = PhoneAuthOptions.newBuilder(Firebase.mAuth)
+                    val options = PhoneAuthOptions.newBuilder(FirebaseAuth.getInstance())
                         .setPhoneNumber(phoneNumber) // Phone number to verify
                         .setTimeout(60L, TimeUnit.SECONDS) // Timeout and unit
                         .setActivity(this@PhoneLoginActivity) // Activity (for callback binding)
@@ -135,7 +130,7 @@ class PhoneLoginActivity : AppCompatActivity() {
     }
 
     private fun signInWithPhoneAuthCredential(credential : PhoneAuthCredential){
-        Firebase.mAuth.signInWithCredential(credential).addOnCompleteListener(this
+        FirebaseAuth.getInstance().signInWithCredential(credential).addOnCompleteListener(this
         ) {
             if (it.isSuccessful){
                 loadingBar.dismiss()
@@ -156,6 +151,7 @@ class PhoneLoginActivity : AppCompatActivity() {
 
     private fun sendUserToMainActivity() {
         val mainIntent = Intent(this, MainActivity::class.java)
+        Firebase.currentUser = FirebaseAuth.getInstance().currentUser
         startActivity(mainIntent)
         finish()
     }

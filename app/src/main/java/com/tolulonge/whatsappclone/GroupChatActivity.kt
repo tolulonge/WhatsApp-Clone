@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ScrollView
 import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -26,7 +27,7 @@ class GroupChatActivity : AppCompatActivity() {
         binding = ActivityGroupChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
         currentGroupName = intent.extras?.get("groupName").toString()
-        currentUserId = Firebase.mAuth.uid.toString()
+        currentUserId = FirebaseAuth.getInstance().uid.toString()
 
         Toast.makeText(this, currentGroupName, Toast.LENGTH_SHORT).show()
 

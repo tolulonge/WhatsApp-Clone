@@ -5,9 +5,8 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 
 object Firebase {
-    val mAuth = FirebaseAuth.getInstance()
     val rootRef = FirebaseDatabase.getInstance().reference
-    val currentUser = mAuth.currentUser
+    var currentUser = FirebaseAuth.getInstance().currentUser
     val userProfileImagesRef = FirebaseStorage.getInstance().reference.child("Profile Images")
 
 

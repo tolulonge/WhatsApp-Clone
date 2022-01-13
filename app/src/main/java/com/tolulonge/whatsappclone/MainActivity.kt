@@ -3,6 +3,7 @@ package com.tolulonge.whatsappclone
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
@@ -23,9 +24,11 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        Log.d("MainActivity", "onCreate: ")
+
          setSupportActionBar(binding.mainToolBar)
         supportActionBar?.title = "WhatsApp"
-        myTabsAccessorAdapter = TabsAccessorAdapter(supportFragmentManager, 3)
+        myTabsAccessorAdapter = TabsAccessorAdapter(supportFragmentManager, 4)
         binding.mainTabsPager.apply {
             adapter = myTabsAccessorAdapter
         }.also { binding.mainTabs.setupWithViewPager(it) }
@@ -42,7 +45,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun verifyUserExistence() {
-        val currentUserID = Firebase.mAuth.currentUser?.uid
+        val currentUserID = FirebaseAuth.getInstance().currentUser?.uid
         if (currentUserID != null) {
             Firebase.rootRef.child("Users").child(currentUserID).addValueEventListener(object: ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -69,7 +72,8 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
          when (item.itemId) {
             R.id.main_logout_option -> {
-                Firebase.mAuth.signOut()
+                FirebaseAuth.getInstance().signOut()
+                Firebase.currentUser = null
                 sendUserToLoginActivity()
             }
              R.id.main_create_group_option -> {
@@ -138,9 +142,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun sendUserToSettingsActivity() {
         val settingsIntent = Intent(this, SettingsActivity::class.java)
-        settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(settingsIntent)
-        finish()
     }
 
     private fun sendUserToFindFriendsActivity(){

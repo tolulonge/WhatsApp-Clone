@@ -14,6 +14,7 @@ class TabsAccessorAdapter(private val fm : FragmentManager, private val count : 
             0 ->  ChatsFragment()
             1 ->   GroupsFragment()
             2 ->   ContactsFragment()
+            3 ->   RequestsFragment()
           else -> ChatsFragment()
       }
     }
@@ -23,6 +24,7 @@ class TabsAccessorAdapter(private val fm : FragmentManager, private val count : 
             0 ->  "Chats"
             1 ->   "Groups"
             2 ->   "Contacts"
+            3 ->   "Requests"
             else -> null
         }
     }

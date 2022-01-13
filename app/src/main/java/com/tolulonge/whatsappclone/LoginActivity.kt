@@ -51,7 +51,7 @@ class LoginActivity : AppCompatActivity() {
         loadingBar.setMessage("Please wait...")
         loadingBar.setCanceledOnTouchOutside(true)
         loadingBar.show()
-        Firebase.mAuth.signInWithEmailAndPassword(email, password)?.addOnCompleteListener {
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)?.addOnCompleteListener {
             if(it.isSuccessful){
                 sendUserToMainActivity()
                 Toast.makeText(this, "Logged in Successfully...", Toast.LENGTH_SHORT).show()
@@ -72,6 +72,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun sendUserToMainActivity() {
         val mainIntent = Intent(this, MainActivity::class.java)
+        Firebase.currentUser = FirebaseAuth.getInstance().currentUser
         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(mainIntent)
         finish()

@@ -48,9 +48,9 @@ class RegisterActivity : AppCompatActivity() {
         loadingBar.setMessage("Please Wait, while we are creating new account for you...")
         loadingBar.setCanceledOnTouchOutside(true)
         loadingBar.show()
-            Firebase.mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener {
+            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password).addOnCompleteListener {
                 if (it.isSuccessful){
-                    val currentUserId = Firebase.mAuth.currentUser?.uid
+                    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
                     if (currentUserId != null) {
                         Firebase.rootRef.child("Users").child(currentUserId).setValue("")
                     }

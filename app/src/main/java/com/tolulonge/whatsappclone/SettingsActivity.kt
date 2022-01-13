@@ -31,6 +31,10 @@ class SettingsActivity : AppCompatActivity() {
         rootRef = FirebaseDatabase.getInstance().reference
         currentUserID = mAuth.currentUser?.uid.toString()
         loadingBar = ProgressDialog(this)
+        setSupportActionBar(binding.settingsToolBar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowCustomEnabled(true)
+        supportActionBar?.title = "Account Settings"
 
         binding.updateSettingsButton.setOnClickListener {
             updateSettings()
@@ -90,7 +94,7 @@ class SettingsActivity : AppCompatActivity() {
 
                         binding.setUserName.setText(retrievedUserName)
                         binding.setProfileStatus.setText(retrievedStatus)
-                        Log.d("DebuggingPicture", "onDataChange: $retrievedImage")
+                        Log.d("Debug", "onDataChange: $retrievedImage")
                         Picasso.get().load(retrievedImage).into(binding.setProfileImage)
 
                     }else if (snapshot.exists() && snapshot.hasChild("name")){
