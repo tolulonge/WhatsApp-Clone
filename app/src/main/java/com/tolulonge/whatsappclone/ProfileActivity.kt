@@ -19,6 +19,7 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileBinding
     private lateinit var chatRequestRef: DatabaseReference
     private lateinit var contactRef: DatabaseReference
+    private lateinit var notificationRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +29,7 @@ class ProfileActivity : AppCompatActivity() {
         sendUserID = FirebaseAuth.getInstance().currentUser?.uid.toString()
         chatRequestRef = Firebase.rootRef.child("Chat Requests")
         contactRef = Firebase.rootRef.child("Contacts")
+        notificationRef = Firebase.rootRef.child("Notifications")
 
         receiverUserID = intent.extras?.get("visit_user_id").toString()
         Toast.makeText(this, receiverUserID, Toast.LENGTH_SHORT).show()
@@ -198,17 +200,28 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun sendChatRequest() {
+
         chatRequestRef.child(sendUserID).child(receiverUserID)
             .child("request_type").setValue("sent")
             .addOnCompleteListener { task ->
                 if (task.isSuccessful){
                     chatRequestRef.child(receiverUserID).child(sendUserID)
                         .child("request_type").setValue("received")
-                        .addOnCompleteListener {
-                            if (it.isSuccessful){
-                                binding.sendMessageRequestButton.isEnabled = true
-                                currentState = "request_sent"
-                                binding.sendMessageRequestButton.text = "Cancel Chat Request"
+                        .addOnCompleteListener { task1 ->
+                            if (task1.isSuccessful){
+
+                                val chatNotificationMap = hashMapOf("from" to sendUserID, "type" to "request")
+                                notificationRef.child(receiverUserID).push()
+                                    .setValue(chatNotificationMap)
+                                    .addOnCompleteListener {
+                                        if (it.isSuccessful){
+                                            binding.sendMessageRequestButton.isEnabled = true
+                                            currentState = "request_sent"
+                                            binding.sendMessageRequestButton.text = "Cancel Chat Request"
+
+                                        }
+                                    }
+
                             }
                         }
                 }

@@ -9,11 +9,15 @@ import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.messaging.FirebaseMessaging
 import com.tolulonge.whatsappclone.databinding.ActivityRegisterBinding
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var binding : ActivityRegisterBinding
     private lateinit var loadingBar: ProgressDialog
+    private lateinit var mAuth: FirebaseAuth
+    private lateinit var rootRef: DatabaseReference
+    private lateinit var deviceToken: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,6 +25,8 @@ class RegisterActivity : AppCompatActivity() {
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
         loadingBar = ProgressDialog(this)
+        mAuth = FirebaseAuth.getInstance()
+        rootRef = FirebaseDatabase.getInstance().reference
 
         binding.alreadyHaveAccountLink.setOnClickListener {
             sendUserToLoginActivity()
@@ -48,18 +54,26 @@ class RegisterActivity : AppCompatActivity() {
         loadingBar.setMessage("Please Wait, while we are creating new account for you...")
         loadingBar.setCanceledOnTouchOutside(true)
         loadingBar.show()
-            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password).addOnCompleteListener {
-                if (it.isSuccessful){
-                    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-                    if (currentUserId != null) {
-                        Firebase.rootRef.child("Users").child(currentUserId).setValue("")
-                    }
+            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+                if (task.isSuccessful){
+                     FirebaseMessaging.getInstance().token.addOnCompleteListener {
+                         deviceToken = it.result.toString()
+                         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                         if (currentUserId != null) {
+                             rootRef.child("Users").child(currentUserId).setValue("")
+                             rootRef.child("Users").child(currentUserId).child("device_token").setValue(deviceToken)
 
-                    Toast.makeText(this, "Account Created Successfully", Toast.LENGTH_SHORT).show()
-                    loadingBar.dismiss()
-                    sendUserToMainActivity()
+
+                         }
+
+                         Toast.makeText(this, "Account Created Successfully", Toast.LENGTH_SHORT).show()
+                         loadingBar.dismiss()
+                         sendUserToMainActivity()
+                     }
+
+
                 }else{
-                    val message = it.exception.toString()
+                    val message = task.exception.toString()
                     Toast.makeText(this, "Error : $message", Toast.LENGTH_SHORT).show()
                     loadingBar.dismiss()
                 }

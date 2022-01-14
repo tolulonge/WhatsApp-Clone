@@ -7,18 +7,24 @@ import android.os.Bundle
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.messaging.FirebaseMessaging
 import com.tolulonge.whatsappclone.databinding.ActivityLoginBinding
 import com.tolulonge.whatsappclone.databinding.ActivityMainBinding
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private lateinit var loadingBar: ProgressDialog
+    private lateinit var usersRef: DatabaseReference
+    private lateinit var deviceToken: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
         loadingBar = ProgressDialog(this)
+        usersRef = FirebaseDatabase.getInstance().reference.child("Users")
 
         binding.needNewAccontLink.setOnClickListener {
             sendUserToRegisterActivity()
@@ -51,13 +57,28 @@ class LoginActivity : AppCompatActivity() {
         loadingBar.setMessage("Please wait...")
         loadingBar.setCanceledOnTouchOutside(true)
         loadingBar.show()
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)?.addOnCompleteListener {
-            if(it.isSuccessful){
-                sendUserToMainActivity()
-                Toast.makeText(this, "Logged in Successfully...", Toast.LENGTH_SHORT).show()
-                loadingBar.dismiss()
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)?.addOnCompleteListener { task ->
+            if(task.isSuccessful){
+                val currentUserID = FirebaseAuth.getInstance().currentUser?.uid
+                FirebaseMessaging.getInstance().token.addOnCompleteListener {
+                   deviceToken = it.result.toString()
+                    if (currentUserID != null) {
+                        usersRef.child(currentUserID).child("device_token")
+                            .setValue(deviceToken)
+                            .addOnCompleteListener {
+                                if (it.isSuccessful){
+                                    sendUserToMainActivity()
+                                    Toast.makeText(this, "Logged in Successfully...", Toast.LENGTH_SHORT).show()
+                                    loadingBar.dismiss()
+                                }
+                            }
+                    }
+                }
+
+
+
             }else{
-                val message = it.exception.toString()
+                val message = task.exception.toString()
                 Toast.makeText(this, "Error : $message", Toast.LENGTH_SHORT).show()
                 loadingBar.dismiss()
             }
