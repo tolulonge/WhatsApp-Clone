@@ -6,6 +6,9 @@
         <entry key="../../../../layout/custom_preview.xml" value="0.4057217165149545" />
         <entry key="app/src/main/res/drawable/buttons.xml" value="0.1259259259259259" />
         <entry key="app/src/main/res/drawable/inputs.xml" value="0.321025641025641" />
+        <entry key="app/src/main/res/drawable/receiver_messages_layout.xml" value="0.321025641025641" />
+        <entry key="app/src/main/res/drawable/sender_messages_layout.xml" value="0.321025641025641" />
+        <entry key="app/src/main/res/layout/activity_chat.xml" value="0.26721014492753625" />
         <entry key="app/src/main/res/layout/activity_find_friends.xml" value="0.26721014492753625" />
         <entry key="app/src/main/res/layout/activity_group_chat.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_login.xml" value="0.165" />
@@ -15,6 +18,8 @@
         <entry key="app/src/main/res/layout/activity_register.xml" value="0.26721014492753625" />
         <entry key="app/src/main/res/layout/activity_settings.xml" value="0.25" />
         <entry key="app/src/main/res/layout/app_bar_layout.xml" value="0.1503623188405797" />
+        <entry key="app/src/main/res/layout/custom_chat_bar.xml" value="0.1921875" />
+        <entry key="app/src/main/res/layout/custom_messages_layout.xml" value="0.26721014492753625" />
         <entry key="app/src/main/res/layout/fragment_chats.xml" value="0.26721014492753625" />
         <entry key="app/src/main/res/layout/fragment_contacts.xml" value="0.26721014492753625" />
         <entry key="app/src/main/res/layout/fragment_groups.xml" value="0.26721014492753625" />

@@ -1,59 +1,120 @@
 package com.tolulonge.whatsappclone
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import com.firebase.ui.database.FirebaseRecyclerAdapter
+import com.firebase.ui.database.FirebaseRecyclerOptions
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.ValueEventListener
+import com.squareup.picasso.Picasso
+import com.tolulonge.whatsappclone.databinding.FragmentChatsBinding
+import com.tolulonge.whatsappclone.databinding.FragmentContactsBinding
+import com.tolulonge.whatsappclone.databinding.UsersDisplayLayoutBinding
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [ChatsFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ChatsFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private var _binding: FragmentChatsBinding? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    // This property is only valid between onCreateView and
+    // onDestroyView.
+    private val binding get() = _binding!!
+    private lateinit var contactsRef : DatabaseReference
+    private lateinit var usersRef : DatabaseReference
+    private lateinit var currentUserID : String
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_chats, container, false)
+        _binding = FragmentChatsBinding.inflate(inflater, container, false)
+        currentUserID = Firebase.currentUser?.uid.toString()
+        contactsRef = Firebase.rootRef.child("Contacts").child(currentUserID)
+        usersRef = Firebase.rootRef.child("Users")
+
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ChatsFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ChatsFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+
+    override fun onStart() {
+        super.onStart()
+        val options = FirebaseRecyclerOptions.Builder<Contacts>()
+            .setQuery(contactsRef, Contacts::class.java).build()
+
+        val adapter = object : FirebaseRecyclerAdapter<Contacts, ChatViewHolder>(options){
+            override fun onCreateViewHolder(
+                parent: ViewGroup,
+                viewType: Int
+            ): ChatViewHolder {
+                val binding = UsersDisplayLayoutBinding.inflate(LayoutInflater.from(parent.context),parent,false)
+                return ChatViewHolder(binding)
+            }
+
+            override fun onBindViewHolder(
+                holder: ChatViewHolder,
+                position: Int,
+                model: Contacts
+            ) {
+                with(holder){
+                    val userIDs = getRef(position).key.toString()
+                    val retImage = arrayOf("default_image")
+                    Log.d("CurrentContact", "onBindViewHolder: $userIDs")
+                    usersRef.child(userIDs).addValueEventListener(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if(snapshot.exists()){
+                                val userName = snapshot.child("name").value.toString()
+                                val userStatus = snapshot.child("status").value.toString()
+
+
+                                if (snapshot.hasChild("image")){
+                                    retImage[0] = snapshot.child("image").value.toString()
+                                    Picasso.get().load(retImage[0])
+                                        .placeholder(R.drawable.profile_image)
+                                        .into(binding2.usersProfileImage)
+                                }
+                                binding2.userProfileName.text = userName
+                                binding2.userStatus.text = "Last Seen: \nDate  Time "
+
+                                itemView.setOnClickListener {
+                                    val chatIntent = Intent(requireContext(), ChatActivity::class.java)
+                                    chatIntent.putExtra("visit_user_id",userIDs)
+                                    chatIntent.putExtra("visit_user_name", userName)
+                                    chatIntent.putExtra("visit_image",retImage[0])
+                                    startActivity(chatIntent)
+                                }
+
+                            }
+
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+
+                        }
+
+                    })
                 }
             }
+
+        }
+
+        binding.chatsList.adapter = adapter
+        adapter.startListening()
+    }
+
+    inner class ChatViewHolder( val binding2: UsersDisplayLayoutBinding) : RecyclerView.ViewHolder(binding2.root) {
+
+    }
+
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
