@@ -1,5 +1,9 @@
 package com.tolulonge.whatsappclone
 
+import android.app.AlertDialog
+import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -72,9 +76,210 @@ class MessageAdapter(private var userMessagesList: List<Messages>) : RecyclerVie
                     holder.binding.receiverMessageText.setBackgroundResource(R.drawable.receiver_messages_layout)
                     holder.binding.receiverMessageText.text = "${messages.message} \n \n${messages.time} - ${messages.date}"
             }
+        }else if (fromMessageType == "image"){
+            if (fromUserID == messageSenderID){
+                holder.binding.messageSenderImageView.visibility = View.VISIBLE
+                Picasso.get().load(messages.message).into(holder.binding.messageSenderImageView)
+            }else{
+                holder.binding.messageReceiverImageView.visibility = View.VISIBLE
+                holder.binding.messageProfileImage.visibility = View.VISIBLE
+                Picasso.get().load(messages.message).into(holder.binding.messageReceiverImageView)
+            }
+        }else if (fromMessageType == "pdf" || fromMessageType == "docx"){
+            if (fromUserID == messageSenderID){
+                holder.binding.messageSenderImageView.visibility = View.VISIBLE
+                Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/whatsappclone-b4403.appspot.com/o/Image%20Files%2Ffiles.png?alt=media&token=9c70a318-dd2a-44c5-bca9-a4aee05a46a9")
+                    .into(holder.binding.messageSenderImageView)
+            }else{
+                holder.binding.messageReceiverImageView.visibility = View.VISIBLE
+                holder.binding.messageProfileImage.visibility = View.VISIBLE
+                Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/whatsappclone-b4403.appspot.com/o/Image%20Files%2Ffiles.png?alt=media&token=9c70a318-dd2a-44c5-bca9-a4aee05a46a9")
+                    .into(holder.binding.messageReceiverImageView)
+            }
         }
+        if (fromUserID == messageSenderID){
+            holder.itemView.setOnClickListener {
+                if (userMessagesList[position].type == "pdf" || userMessagesList[position].type == "docx"){
+                    val options = arrayOf("Delete for me", "Download and view this document", "Cancel", "Delete for everyone")
+                    val builder = AlertDialog.Builder(holder.itemView.context)
+                    builder.apply {
+                        setTitle("Delete Message?")
+                        setItems(options) { _, p1 ->
+                            when (p1) {
+                                0 -> {
+                                    deleteSentMessage(position, holder)
+                                }
+                                1 -> {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(userMessagesList[position].message))
+                                    holder.itemView.context.startActivity(intent)
+                                }
+                                3 -> {
+                                    deleteMessageForEveryOne(position, holder)
+                                }
+                            }
+                        }
+                        show()
+                    }
 
+
+                }else if (userMessagesList[position].type == "text"){
+                    val options = arrayOf("Delete for me", "Cancel", "Delete for everyone")
+                    val builder = AlertDialog.Builder(holder.itemView.context)
+                    builder.apply {
+                        setTitle("Delete Message?")
+                        setItems(options) { _, p1 ->
+                            when (p1) {
+                                0 -> {
+                                    deleteSentMessage(position, holder)
+                                }
+                                2 -> {
+                                    deleteMessageForEveryOne(position, holder)
+                                }
+                            }
+                        }
+                        show()
+                    }
+                }else if (userMessagesList[position].type == "image"){
+                    val options = arrayOf("Delete for me", "View this Image","Cancel" ,"Delete for everyone")
+                    val builder = AlertDialog.Builder(holder.itemView.context)
+                    builder.apply {
+                        setTitle("Delete Message?")
+                        setItems(options) { _, p1 ->
+                            when (p1) {
+                                0 -> {
+                                    deleteSentMessage(position, holder)
+                                }
+                                1 -> {
+                                    viewImage(holder,userMessagesList[position].message)
+                                }
+                                3 -> {
+                                    deleteMessageForEveryOne(position, holder)
+
+                                }
+                            }
+                        }
+                        show()
+                    }
+                }
+            }
+        }else{
+
+            holder.itemView.setOnClickListener {
+                if (userMessagesList[position].type == "pdf" || userMessagesList[position].type == "docx"){
+                    val options = arrayOf("Delete for me", "Download and view this document", "Cancel")
+                    val builder = AlertDialog.Builder(holder.itemView.context)
+                    builder.apply {
+                        setTitle("Delete Message?")
+                        setItems(options) { _, p1 ->
+                            when (p1) {
+                                0 -> {
+                                    deleteReceiveMessage(position, holder)
+                                }
+                                1 -> {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(userMessagesList[position].message))
+                                    holder.itemView.context.startActivity(intent)
+                                }
+
+                            }
+                        }
+                        show()
+                    }
+
+
+                }else if (userMessagesList[position].type == "text"){
+                    val options = arrayOf("Delete for me", "Cancel")
+                    val builder = AlertDialog.Builder(holder.itemView.context)
+                    builder.apply {
+                        setTitle("Delete Message?")
+                        setItems(options) { _, p1 ->
+                            when (p1) {
+                                0 -> {
+                                    deleteReceiveMessage(position, holder)
+                                }
+
+                            }
+                        }
+                        show()
+                    }
+                }else if (userMessagesList[position].type == "image"){
+                    val options = arrayOf("Delete for me", "View this Image","Cancel")
+                    val builder = AlertDialog.Builder(holder.itemView.context)
+                    builder.apply {
+                        setTitle("Delete Message?")
+                        setItems(options) { _, p1 ->
+                            when (p1) {
+                                0 -> {
+                                    deleteReceiveMessage(position,holder)
+                                }
+                                1 -> {
+                                    viewImage(holder,userMessagesList[position].message)
+                                }
+                            }
+                        }
+                        show()
+                    }
+                }
+            }
+
+        }
     }
+
+    private fun viewImage(context : MessageAdapter.ViewHolder, imageUrl : String){
+        val intent = Intent(context.itemView.context, ImageViewer::class.java)
+        intent.putExtra("url", imageUrl)
+        context.itemView.context.startActivity(intent)
+    }
+
+    private fun deleteSentMessage(position: Int, holder: MessageAdapter.ViewHolder){
+        val rootRef = FirebaseDatabase.getInstance().reference
+        rootRef.child("Messages").child(userMessagesList[position].from)
+            .child(userMessagesList[position].to)
+            .child(userMessagesList[position].messageID)
+            .removeValue().addOnCompleteListener {
+                if (it.isSuccessful){
+                    showToast("Deleted Successfully", holder.itemView.context)
+                }else{
+                    showToast("Error Occurred", holder.itemView.context)
+                }
+            }
+    }
+
+    private fun deleteReceiveMessage(position: Int, holder: MessageAdapter.ViewHolder){
+        val rootRef = FirebaseDatabase.getInstance().reference
+        rootRef.child("Messages").child(userMessagesList[position].to)
+            .child(userMessagesList[position].from)
+            .child(userMessagesList[position].messageID)
+            .removeValue().addOnCompleteListener {
+                if (it.isSuccessful){
+                    showToast("Deleted Successfully", holder.itemView.context)
+                }else{
+                    showToast("Error Occurred", holder.itemView.context)
+                }
+            }
+    }
+
+    private fun deleteMessageForEveryOne(position: Int, holder: MessageAdapter.ViewHolder){
+        val rootRef = FirebaseDatabase.getInstance().reference
+        rootRef.child("Messages").child(userMessagesList[position].to)
+            .child(userMessagesList[position].from)
+            .child(userMessagesList[position].messageID)
+            .removeValue().addOnCompleteListener { task ->
+                if (task.isSuccessful){
+                    rootRef.child("Messages").child(userMessagesList[position].from)
+                        .child(userMessagesList[position].to)
+                        .child(userMessagesList[position].messageID)
+                        .removeValue().addOnCompleteListener {
+                            if (it.isSuccessful){
+                                showToast("Deleted Successfully", holder.itemView.context)
+                            }
+                        }
+                }else{
+                    showToast("Error Occurred", holder.itemView.context)
+                }
+            }
+    }
+
+
 
     override fun getItemCount(): Int {
       return userMessagesList.size

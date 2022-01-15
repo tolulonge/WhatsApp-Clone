@@ -14,9 +14,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WhatsAppClone">
         <activity
+            android:name=".ImageViewer"
+            android:exported="false" />
+        <activity
             android:name=".ChatActivity"
             android:exported="false"
-            android:parentActivityName=".MainActivity"/>
+            android:parentActivityName=".MainActivity" />
         <activity
             android:name=".ProfileActivity"
             android:exported="false" />
