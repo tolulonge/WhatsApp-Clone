@@ -68,23 +68,41 @@ class ContactsFragment : Fragment() {
                     Log.d("CurrentContact", "onBindViewHolder: $userIDs")
                         usersRef.child(userIDs).addValueEventListener(object : ValueEventListener{
                             override fun onDataChange(snapshot: DataSnapshot) {
-                                if (snapshot.hasChild("image")){
-                                    val profileImage = snapshot.child("image").value.toString()
-                                    val userName = snapshot.child("name").value.toString()
-                                    val userStatus = snapshot.child("status").value.toString()
+                               if (snapshot.exists()){
+                                   if (snapshot.child("userState").hasChild("state")){
+                                       val state = snapshot.child("userState").child("state").value.toString()
+                                       val date = snapshot.child("userState").child("date").value.toString()
+                                       val time = snapshot.child("userState").child("time").value.toString()
 
-                                    binding2.userProfileName.text = userName
-                                    binding2.userStatus.text = userStatus
-                                    Picasso.get().load(profileImage)
-                                        .placeholder(com.tolulonge.whatsappclone.R.drawable.profile_image)
-                                        .into(binding2.usersProfileImage)
-                                }else{
-                                    val userName = snapshot.child("name").value.toString()
-                                    val userStatus = snapshot.child("status").value.toString()
+                                       if (state == "online"){
+                                           binding2.userOnlineStatus.visibility = View.VISIBLE
+                                       }else if (state == "offline"){
+                                           binding2.userOnlineStatus.visibility = View.INVISIBLE
 
-                                    binding2.userProfileName.text = userName
-                                    binding2.userStatus.text = userStatus
-                                }
+                                       }
+
+                                   }else{
+                                       binding2.userOnlineStatus.visibility = View.INVISIBLE
+
+                                   }
+                                   if (snapshot.hasChild("image")){
+                                       val profileImage = snapshot.child("image").value.toString()
+                                       val userName = snapshot.child("name").value.toString()
+                                       val userStatus = snapshot.child("status").value.toString()
+
+                                       binding2.userProfileName.text = userName
+                                       binding2.userStatus.text = userStatus
+                                       Picasso.get().load(profileImage)
+                                           .placeholder(com.tolulonge.whatsappclone.R.drawable.profile_image)
+                                           .into(binding2.usersProfileImage)
+                                   }else{
+                                       val userName = snapshot.child("name").value.toString()
+                                       val userStatus = snapshot.child("status").value.toString()
+
+                                       binding2.userProfileName.text = userName
+                                       binding2.userStatus.text = userStatus
+                                   }
+                               }
                             }
 
                             override fun onCancelled(error: DatabaseError) {

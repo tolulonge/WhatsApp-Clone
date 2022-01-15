@@ -73,14 +73,29 @@ class ChatsFragment : Fragment() {
                                 val userStatus = snapshot.child("status").value.toString()
 
 
+                                binding2.userProfileName.text = userName
                                 if (snapshot.hasChild("image")){
                                     retImage[0] = snapshot.child("image").value.toString()
                                     Picasso.get().load(retImage[0])
                                         .placeholder(R.drawable.profile_image)
                                         .into(binding2.usersProfileImage)
                                 }
-                                binding2.userProfileName.text = userName
-                                binding2.userStatus.text = "Last Seen: \nDate  Time "
+                                if (snapshot.child("userState").hasChild("state")){
+                                    val state = snapshot.child("userState").child("state").value.toString()
+                                    val date = snapshot.child("userState").child("date").value.toString()
+                                    val time = snapshot.child("userState").child("time").value.toString()
+
+                                    if (state == "online"){
+                                        binding2.userStatus.text = "Online"
+                                    }else if (state == "offline"){
+                                        binding2.userStatus.text = "Last Seen: $date $time "
+                                    }
+
+                                }else{
+                                    binding2.userStatus.text = "Offline"
+
+                                }
+
 
                                 itemView.setOnClickListener {
                                     val chatIntent = Intent(requireContext(), ChatActivity::class.java)

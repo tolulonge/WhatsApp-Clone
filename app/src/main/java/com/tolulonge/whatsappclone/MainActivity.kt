@@ -13,11 +13,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import com.tolulonge.whatsappclone.databinding.ActivityMainBinding
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var myTabsAccessorAdapter: TabsAccessorAdapter
+    private lateinit var currentUserId : String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,11 +39,26 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (Firebase.currentUser == null){
+        if (FirebaseAuth.getInstance().currentUser == null){
             sendUserToLoginActivity()
         }
         else{
+            updateUserStatus("online")
             verifyUserExistence()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if(FirebaseAuth.getInstance().currentUser != null){
+            updateUserStatus("offline")
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if(FirebaseAuth.getInstance().currentUser != null){
+            updateUserStatus("offline")
         }
     }
 
@@ -73,6 +91,7 @@ class MainActivity : AppCompatActivity() {
          when (item.itemId) {
             R.id.main_logout_option -> {
                 FirebaseAuth.getInstance().signOut()
+                updateUserStatus("offline")
                 Firebase.currentUser = null
                 sendUserToLoginActivity()
             }
@@ -148,5 +167,23 @@ class MainActivity : AppCompatActivity() {
     private fun sendUserToFindFriendsActivity(){
         val findFriendsIntent = Intent(this, FindFriendsActivity::class.java)
         startActivity(findFriendsIntent)
+    }
+
+    private fun updateUserStatus(state : String){
+
+        val currentDate = SimpleDateFormat("MMM dd, yyyy")
+        val calendar = Calendar.getInstance()
+        val saveCurrentDate = currentDate.format(calendar.time)
+
+        val currentTime = SimpleDateFormat("hh:mm a")
+        val saveCurrentTime = currentTime.format(calendar.time)
+
+        val onlineStateMap = hashMapOf("time" to saveCurrentTime, "date" to saveCurrentDate, "state" to state)
+
+        currentUserId = FirebaseAuth.getInstance().currentUser?.uid.toString()
+        Firebase.rootRef.child("Users").child(currentUserId).child("userState")
+            .updateChildren(onlineStateMap as Map<String, Any>)
+
+
     }
 }

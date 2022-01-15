@@ -13,6 +13,8 @@ import com.google.firebase.database.*
 import com.squareup.picasso.Picasso
 import com.tolulonge.whatsappclone.databinding.ActivityChatBinding
 import de.hdodenhof.circleimageview.CircleImageView
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ChatActivity : AppCompatActivity() {
     private lateinit var binding: ActivityChatBinding
@@ -20,6 +22,8 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var messageSenderID: String
     private lateinit var messageReceiverName: String
     private lateinit var messageReceiverImage: String
+    private lateinit var saveCurrentTime: String
+    private lateinit var saveCurrentDate: String
     private lateinit var userName: TextView
     private lateinit var userLastSeen: TextView
     private lateinit var userImage: CircleImageView
@@ -43,6 +47,7 @@ class ChatActivity : AppCompatActivity() {
         messageReceiverImage = intent.extras?.get("visit_image").toString()
 
         initializeControllers()
+        displayLastSeen()
 
         userName.text = messageReceiverName
         Picasso.get().load(messageReceiverImage).placeholder(R.drawable.profile_image).into(userImage)
@@ -106,7 +111,42 @@ class ChatActivity : AppCompatActivity() {
         userName = findViewById(R.id.custom_profile_name)
         userImage = findViewById(R.id.custom_profile_image)
         userLastSeen = findViewById(R.id.custom_user_last_seen)
+
+        val currentDate = SimpleDateFormat("MMM dd, yyyy")
+        val calendar = Calendar.getInstance()
+        saveCurrentDate = currentDate.format(calendar.time)
+
+        val currentTime = SimpleDateFormat("hh:mm a")
+        saveCurrentTime = currentTime.format(calendar.time)
     }
+
+    private fun displayLastSeen(){
+        rootRef.child("Users").child(messageReceiverID).addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.child("userState").hasChild("state")){
+                    val state = snapshot.child("userState").child("state").value.toString()
+                    val date = snapshot.child("userState").child("date").value.toString()
+                    val time = snapshot.child("userState").child("time").value.toString()
+
+                    if (state == "online"){
+                        userLastSeen.text = "Online"
+                    }else if (state == "offline"){
+                        userLastSeen.text = "Last Seen: $date $time "
+                    }
+
+                }else{
+                    userLastSeen.text = "Offline"
+
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+
+        })
+    }
+
 
     private fun sendMessage(){
         val messageText = binding.inputMessage.text.toString()
@@ -121,7 +161,8 @@ class ChatActivity : AppCompatActivity() {
                 .child(messageSenderID).child(messageReceiverID).push()
 
             val messagePushID = userMessageKeyRef.key
-            val messageTextBody = hashMapOf("message" to messageText, "type" to "text", "from" to messageSenderID)
+            val messageTextBody = hashMapOf("message" to messageText, "type" to "text", "from" to messageSenderID,"to" to messageReceiverID
+            ,"messageID" to messagePushID, "time" to saveCurrentTime, "date" to saveCurrentDate)
 
             val messageBodyDetails = hashMapOf("$messageSenderRef/$messagePushID" to messageTextBody, "$messageReceiverRef/$messagePushID" to messageTextBody)
             rootRef.updateChildren(messageBodyDetails as Map<String, Any>).addOnCompleteListener {

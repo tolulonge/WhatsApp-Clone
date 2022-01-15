@@ -49,23 +49,28 @@ class MessageAdapter(private var userMessagesList: List<Messages>) : RecyclerVie
             }
 
         })
+
+        holder.binding.receiverMessageText.visibility = View.GONE
+        holder.binding.messageProfileImage.visibility = View.GONE
+        holder.binding.senderMesssageText.visibility = View.GONE
+
+        holder.binding.messageSenderImageView.visibility = View.GONE
+        holder.binding.messageReceiverImageView.visibility = View.GONE
         if (fromMessageType == "text"){
-            holder.binding.receiverMessageText.visibility = View.INVISIBLE
-            holder.binding.messageProfileImage.visibility = View.INVISIBLE
-            holder.binding.senderMessageText.visibility = View.INVISIBLE
 
 
             if (fromUserID == messageSenderID){
-                holder.binding.senderMessageText.visibility = View.VISIBLE
+                holder.binding.senderMesssageText.visibility = View.VISIBLE
 
-                holder.binding.senderMessageText.setBackgroundResource(R.drawable.sender_messages_layout)
-                holder.binding.senderMessageText.text = messages.message
+                holder.binding.senderMesssageText.setBackgroundResource(R.drawable.sender_messages_layout)
+                holder.binding.senderMesssageText.text = "${messages.message} \n \n${messages.time} - ${messages.date}"
+
             }else{
                 holder.binding.receiverMessageText.visibility = View.VISIBLE
                 holder.binding.messageProfileImage.visibility = View.VISIBLE
 
                     holder.binding.receiverMessageText.setBackgroundResource(R.drawable.receiver_messages_layout)
-                    holder.binding.receiverMessageText.text = messages.message
+                    holder.binding.receiverMessageText.text = "${messages.message} \n \n${messages.time} - ${messages.date}"
             }
         }
 
